@@ -1,14 +1,49 @@
-const http = require("http");
+const express = require("express");
 
-const PORT = process.env.PORT || 3000;
+const app = express();
+app.use(express.json());
 
-const server = http.createServer((req, res) => {
-  res.writeHead(200, {
-    "Content-Type": "text/plain"
-  });
-  res.end("🚀 AyoXpert Telegram AI Bot is running!");
+const BOT_TOKEN = process.env.BOT_TOKEN;
+
+app.get("/", (req, res) => {
+  res.send("🚀 AyoXpert Telegram AI Bot is running!");
 });
 
-server.listen(PORT, () => {
+app.post("/webhook", async (req, res) => {
+  const message = req.body.message;
+
+  if (!message) {
+    return res.sendStatus(200);
+  }
+
+  const chatId = message.chat.id;
+  const text = message.text || "";
+
+  let reply = "";
+
+  if (text === "/start") {
+    reply =
+      "👋 Welcome to AyoXpert!\n\nI'm online and ready to help you.";
+  } else {
+    reply = `You said: ${text}`;
+  }
+
+  await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: reply,
+    }),
+  });
+
+  res.sendStatus(200);
+});
+
+const PORT = process.env.PORT || 8080;
+
+app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
