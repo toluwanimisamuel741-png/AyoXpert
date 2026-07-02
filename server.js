@@ -21,8 +21,26 @@ app.post("/webhook", async (req, res) => {
       return res.sendStatus(200);
     }
 
-    const chatId = message.chat.id;
-    const userText = message.text;
+   const chatId = message.chat.id;
+const userText = message.text.trim();
+
+// Reset conversation
+if (userText.toLowerCase() === "/reset") {
+  delete conversations[chatId];
+
+  await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: "✅ Conversation memory has been cleared. Let's start fresh!"
+    })
+  });
+
+  return res.sendStatus(200);
+}
 
     // Create memory for new users
     if (!conversations[chatId]) {
