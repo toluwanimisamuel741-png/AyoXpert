@@ -23,7 +23,174 @@ app.post("/webhook", async (req, res) => {
 
    const chatId = message.chat.id;
 const userText = message.text.trim();
+// =========================
+// BUILT-IN COMMANDS
+// =========================
 
+if (userText === "/start") {
+  await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text:
+`👋 Welcome to AyoXpert!
+
+I'm your intelligent AI assistant created by Omoniyi Taofeek.
+
+I can help you with:
+
+💻 Programming
+📚 School assignments
+📈 Business
+📱 Digital Marketing
+🎬 Animation
+📝 Writing
+🧮 Mathematics
+🌍 General Knowledge
+💡 Problem Solving
+
+Type /help to see all available commands.`
+    })
+  });
+
+  return res.sendStatus(200);
+}
+
+if (userText === "/help") {
+  await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text:
+`📖 AyoXpert Commands
+
+/start - Welcome message
+/help - Show commands
+/about - About AyoXpert
+/creator - Meet the creator
+/reset - Clear conversation
+/joke - Tell a joke
+/quote - Inspirational quote
+/motivate - Motivation
+
+Or simply ask me any question naturally.`
+    })
+  });
+
+  return res.sendStatus(200);
+}
+
+if (userText === "/about") {
+  await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text:
+`🤖 About AyoXpert
+
+AyoXpert is an intelligent AI assistant designed to answer questions, solve problems, explain concepts, assist with programming, digital marketing, business, writing, mathematics, animation, and much more.
+
+Version: 1.0`
+    })
+  });
+
+  return res.sendStatus(200);
+}
+
+if (userText === "/creator") {
+  await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text:
+`👨‍💻 Creator
+
+AyoXpert was created by Omoniyi Taofeek.
+
+Thank you for using AyoXpert! ❤️`
+    })
+  });
+
+  return res.sendStatus(200);
+}
+
+if (userText === "/joke") {
+
+const jokes = [
+"😂 Why don't programmers like nature? It has too many bugs.",
+"😂 Why did the computer get cold? It forgot to close Windows.",
+"😂 Why do Java developers wear glasses? Because they don't C#.",
+"😂 Why was the math book sad? It had too many problems."
+];
+
+const joke = jokes[Math.floor(Math.random()*jokes.length)];
+
+await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+chat_id:chatId,
+text:joke
+})
+});
+
+return res.sendStatus(200);
+}
+
+if (userText === "/quote") {
+
+const quotes = [
+"Success is the sum of small efforts repeated every day.",
+"Dream big. Start small. Act now.",
+"Believe in yourself and never stop learning.",
+"Discipline beats motivation."
+];
+
+const quote = quotes[Math.floor(Math.random()*quotes.length)];
+
+await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+chat_id:chatId,
+text:quote
+})
+});
+
+return res.sendStatus(200);
+}
+
+if (userText === "/motivate") {
+
+await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+chat_id:chatId,
+text:"🔥 Keep going! Every expert was once a beginner. Stay consistent, keep learning, and you'll build amazing things."
+})
+});
+
+return res.sendStatus(200);
+}
 // Reset conversation
 if (userText.toLowerCase() === "/reset") {
   delete conversations[chatId];
