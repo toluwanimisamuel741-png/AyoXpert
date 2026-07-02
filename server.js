@@ -6,6 +6,9 @@ app.use(express.json());
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
+// Store conversation history for each Telegram chat
+const conversations = {};
+
 app.get("/", (req, res) => {
   res.send("🚀 AyoXpert AI Bot is running!");
 });
