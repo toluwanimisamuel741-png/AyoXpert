@@ -1,4 +1,5 @@
 const express = require("express");
+const { searchWeb } = require("./search");
 
 const app = express();
 app.use(express.json());
@@ -23,9 +24,45 @@ app.post("/webhook", async (req, res) => {
 
    const chatId = message.chat.id;
 const userText = message.text.trim();
-// =========================
-// BUILT-IN COMMANDS
-// =========================
+// Questions that usually need live internet information
+const searchKeywords = [
+  "today",
+  "latest",
+  "news",
+  "current",
+  "weather",
+  "price",
+  "bitcoin",
+  "crypto",
+  "stock",
+  "football",
+  "soccer",
+  "score",
+  "match",
+  "breaking",
+  "update"
+];
+
+const needsSearch = searchKeywords.some(keyword =>
+  userText.toLowerCase().includes(keyword)
+);
+
+let searchContext = "";
+
+if (needsSearch) {
+  await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendChatAction`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      chat_id: chatId,
+      action: "typing"
+    })
+  });
+
+  searchContext = await searchWeb(userText);
+}
 
 if (userText === "/start") {
   await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
@@ -249,10 +286,15 @@ Always behave like a premium AI assistant.
     }
 
     // Save user message
-    conversations[chatId].push({
-      role: "user",
-      content: userText
-    });
+  conversations[chatId].push({
+  role: "user",
+  content: needsSearch
+    ? `User Question: ${userText}
+
+Live Search Results:
+${searchContext}`
+    : userText
+});
 
     // Keep only the latest 20 messages
     if (conversations[chatId].length > 20) {
