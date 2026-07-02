@@ -36,7 +36,7 @@ app.post("/webhook", async (req, res) => {
   {
     role: "system",
     content: `
-You are AyoXpert, an advanced AI assistant created by Samuel Toluwanimi.
+You are AyoXpert, an advanced AI assistant created by Omoniyi Taofeek.
 
 Your personality:
 - Friendly and professional.
