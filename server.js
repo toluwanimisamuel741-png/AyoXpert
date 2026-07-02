@@ -43,11 +43,19 @@ app.post("/webhook", async (req, res) => {
             }
         );
 
-        const data = await geminiResponse.json();
+       const data = await geminiResponse.json();
 
-        let reply =
-            data.candidates?.[0]?.content?.parts?.[0]?.text ||
-            "Sorry, I couldn't generate a response.";
+console.log("Gemini Response:", JSON.stringify(data, null, 2));
+
+let reply;
+
+if (data.error) {
+    reply = "Gemini Error: " + data.error.message;
+} else {
+    reply =
+        data.candidates?.[0]?.content?.parts?.[0]?.text ||
+        "No response from Gemini.";
+}
 
         // Send reply back to Telegram
         await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
