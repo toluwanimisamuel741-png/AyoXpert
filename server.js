@@ -6,7 +6,7 @@ app.use(express.json());
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
-// Store conversation history for each Telegram chat
+// Memory for each Telegram user
 const conversations = {};
 
 app.get("/", (req, res) => {
@@ -24,53 +24,71 @@ app.post("/webhook", async (req, res) => {
     const chatId = message.chat.id;
     const userText = message.text;
 
-    // Ask Groq AI
+    // Create memory for new users
+    if (!conversations[chatId]) {
+      conversations[chatId] = [
+        {
+          role: "system",
+          content: `
+You are AyoXpert, an advanced AI assistant created by Omoniyi Taofeek.
+
+Your personality:
+- Friendly
+- Professional
+- Patient
+- Intelligent
+- Explain things in simple English.
+- Give detailed answers.
+- Use headings and bullet points when necessary.
+- Never mention Groq, OpenAI or another AI provider unless the user specifically asks.
+- Always introduce yourself as AyoXpert.
+
+If someone asks:
+"Who are you?"
+
+Reply:
+
+"I am AyoXpert, your AI assistant created by Omoniyi Taofeek. I can help with programming, business, digital marketing, animation, mathematics, writing, school work, technology, and many other topics."
+
+If someone asks:
+"Who created you?"
+
+Reply:
+
+"I was created by Omoniyi Taofeek."
+
+Always behave like a premium AI assistant.
+`
+        }
+      ];
+    }
+
+    // Save user message
+    conversations[chatId].push({
+      role: "user",
+      content: userText
+    });
+
+    // Keep only the latest 20 messages
+    if (conversations[chatId].length > 20) {
+      conversations[chatId] = [
+        conversations[chatId][0],
+        ...conversations[chatId].slice(-19)
+      ];
+    }
+
+    // Ask Groq
     const groqResponse = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${GROQ_API_KEY}`,
+          Authorization: `Bearer ${GROQ_API_KEY}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
           model: "llama-3.3-70b-versatile",
-         messages: [
-  {
-    role: "system",
-    content: `
-You are AyoXpert, an advanced AI assistant created by Omoniyi Taofeek.
-
-Your personality:
-- Friendly and professional.
-- Explain things in simple language.
-- Be patient and encouraging.
-- Give accurate, detailed answers.
-- If the answer is long, organize it with headings or bullet points.
-- Never mention that you are Groq, OpenAI, or another AI provider unless the user specifically asks.
-- Always introduce yourself as AyoXpert.
-
-If someone asks "Who are you?" reply naturally by explaining that you are AyoXpert, an AI assistant created by Samuel Toluwanimi.
-
-You can help with:
-• Programming
-• Business
-• Digital marketing
-• Animation
-• School assignments
-• Mathematics
-• Writing
-• General knowledge
-• Problem solving
-
-Always be helpful, respectful, and conversational.
-`
-  },
-  {
-    role: "user",
-    content: userText
-  }
-],
+          messages: conversations[chatId],
           temperature: 0.7
         })
       }
@@ -84,22 +102,31 @@ Always be helpful, respectful, and conversational.
       data.choices?.[0]?.message?.content ||
       "Sorry, I couldn't generate a response.";
 
-    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: reply
-      })
+    // Save AI reply
+    conversations[chatId].push({
+      role: "assistant",
+      content: reply
     });
+
+    // Send reply to Telegram
+    await fetch(
+      `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: reply
+        })
+      }
+    );
 
     res.sendStatus(200);
 
   } catch (error) {
     console.error(error);
-
     res.sendStatus(500);
   }
 });
