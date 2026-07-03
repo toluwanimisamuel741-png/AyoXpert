@@ -32,11 +32,12 @@ const chatId = message.chat.id;
 
 // Detect PDF
 if (message.document) {
- await handlePdf(
-  BOT_TOKEN,
-  chatId,
-  message.document
-);
+  await handlePdf(
+    BOT_TOKEN,
+    chatId,
+    message.document
+  );
+
   return res.sendStatus(200);
 }
 
