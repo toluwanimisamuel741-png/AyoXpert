@@ -1,3 +1,4 @@
+const { getDocument } = require("./documents");
 const express = require("express");
 const { searchWeb } = require("./search");
 const { handleCommand } = require("./commands");
@@ -101,18 +102,39 @@ await fetch(
 
     if (needsSearch) {
       searchContext = await searchWeb(userText);
-    }
+    }const pdfText = getDocument(chatId);
+
+let extraContext = "";
+
+if (pdfText) {
+  extraContext = `
+PDF DOCUMENT:
+
+${pdfText.substring(0, 12000)}
+`;
+}
     // Save the user's message
-    addUserMessage(
-      chatId,
-      needsSearch
-        ? `User Question:
-${userText}
+   let finalPrompt = userText;
+
+if (needsSearch) {
+  finalPrompt += `
 
 Live Search Results:
-${searchContext}`
-        : userText
-    );
+
+${searchContext}`;
+}
+
+if (pdfText) {
+  finalPrompt += `
+
+${extraContext}
+
+If the user's question is about the uploaded PDF, answer ONLY using the PDF.
+If it isn't related, answer normally.
+`;
+}
+
+addUserMessage(chatId, finalPrompt);
 
     // Get conversation history
     const messages = getConversation(chatId);
