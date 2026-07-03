@@ -43,19 +43,20 @@ app.post("/webhook", async (req, res) => {
     }
 
     // Show typing indicator
-    await fetch(
-      `https://api.telegram.org/bot${BOT_TOKEN}/sendChatAction`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          chat_id: chatId,
-          action: "typing"
-        })
-      }
-    );
+  await fetch(
+  `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: reply,
+      parse_mode: "Markdown"
+    })
+  }
+);
 
     // Decide if live search is needed
     const searchKeywords = [
