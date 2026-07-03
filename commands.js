@@ -1,12 +1,50 @@
 async function sendMessage(BOT_TOKEN, chatId, text) {
- await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-  method: "POST",
-  headers: {
-    "Content-Type": "application/json"
-  },
-  body: JSON.stringify({
-    chat_id: chatId,
-    text: `🤖 *AyoXpert Commands*
+  await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text: text,
+      parse_mode: "Markdown"
+    })
+  });
+}
+
+async function handleCommand(BOT_TOKEN, chatId, userText, resetConversation) {
+
+  switch (userText.toLowerCase()) {
+
+    case "/start":
+      await sendMessage(
+        BOT_TOKEN,
+        chatId,
+`👋 Welcome to *AyoXpert!*
+
+I'm your intelligent AI assistant.
+
+I can help you with:
+
+💻 Programming
+📚 School Assignments
+📈 Business
+📱 Digital Marketing
+🎬 Animation
+📝 Writing
+🧮 Mathematics
+🌍 General Knowledge
+💡 Problem Solving
+
+Type /help to see all commands.`
+      );
+      return true;
+
+    case "/help":
+      await sendMessage(
+        BOT_TOKEN,
+        chatId,
+`🤖 *AyoXpert Commands*
 
 🚀 /start
 Start AyoXpert
@@ -34,56 +72,7 @@ Daily motivation
 
 ━━━━━━━━━━━━━━
 
-Simply send any question naturally.`,
-    parse_mode: "Markdown"
-  })
-});
-})
-  });
-}
-
-async function handleCommand(BOT_TOKEN, chatId, userText, resetConversation) {
-
-  switch (userText.toLowerCase()) {
-
-    case "/start":
-      await sendMessage(
-        BOT_TOKEN,
-        chatId,
-`👋 Welcome to AyoXpert!
-
-I'm your intelligent AI assistant.
-
-I can help you with:
-
-💻 Programming
-📚 School Assignments
-📈 Business
-📱 Digital Marketing
-🎬 Animation
-📝 Writing
-🧮 Mathematics
-🌍 General Knowledge
-💡 Problem Solving
-
-Type /help to see all commands.`
-      );
-      return true;
-
-    case "/help":
-      await sendMessage(
-        BOT_TOKEN,
-        chatId,
-`📖 Commands
-
-/start
-/help
-/about
-/creator
-/reset
-/joke
-/quote
-/motivate`
+Simply send any question naturally.`
       );
       return true;
 
@@ -91,11 +80,20 @@ Type /help to see all commands.`
       await sendMessage(
         BOT_TOKEN,
         chatId,
-`🤖 AyoXpert
+`🤖 *About AyoXpert*
 
-Version 1.0
+Version: 1.0
 
-A professional AI assistant that helps with programming, business, marketing, school work, writing, technology and much more.`
+AyoXpert is a professional AI assistant that helps with:
+
+• Programming
+• Business
+• Digital Marketing
+• School Work
+• Writing
+• Technology
+• General Knowledge
+• Problem Solving`
       );
       return true;
 
@@ -103,9 +101,9 @@ A professional AI assistant that helps with programming, business, marketing, sc
       await sendMessage(
         BOT_TOKEN,
         chatId,
-`👨‍💻 Creator
+`👨‍💻 *Creator*
 
-AyoXpert was created by Omoniyi Taofeek ❤️`
+AyoXpert was created by *Omoniyi Taofeek* ❤️`
       );
       return true;
 
