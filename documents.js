@@ -5,10 +5,15 @@ function saveDocument(chatId, text) {
 }
 
 function getDocument(chatId) {
-  return documents[chatId];
+  return documents[chatId] || null;
+}
+
+function deleteDocument(chatId) {
+  delete documents[chatId];
 }
 
 module.exports = {
   saveDocument,
-  getDocument
+  getDocument,
+  deleteDocument
 };
