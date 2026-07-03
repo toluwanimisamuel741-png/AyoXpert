@@ -1,6 +1,7 @@
 const express = require("express");
 const { searchWeb } = require("./search");
 const { handleCommand } = require("./commands");
+const { handlePdf } = require("./pdf");
 const {
   getConversation,
   addUserMessage,
@@ -21,14 +22,25 @@ app.get("/", (req, res) => {
 app.post("/webhook", async (req, res) => {
   try {
 
-    const message = req.body.message;
+  const message = req.body.message;
 
-    if (!message || !message.text) {
-      return res.sendStatus(200);
-    }
+if (!message) {
+  return res.sendStatus(200);
+}
 
-    const chatId = message.chat.id;
-    const userText = message.text.trim();
+const chatId = message.chat.id;
+
+// Detect PDF
+if (message.document) {
+  await handlePdf(BOT_TOKEN, chatId);
+  return res.sendStatus(200);
+}
+
+if (!message.text) {
+  return res.sendStatus(200);
+}
+
+const userText = message.text.trim();
 
     // Handle Telegram commands
     const handled = await handleCommand(
