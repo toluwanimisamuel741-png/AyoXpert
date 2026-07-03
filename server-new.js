@@ -85,3 +85,94 @@ app.post("/webhook", async (req, res) => {
     if (needsSearch) {
       searchContext = await searchWeb(userText);
     }
+    // Save the user's message
+    addUserMessage(
+      chatId,
+      needsSearch
+        ? `User Question:
+${userText}
+
+Live Search Results:
+${searchContext}`
+        : userText
+    );
+
+    // Get conversation history
+    const messages = getConversation(chatId);
+
+    // Ask Groq AI
+    const groqResponse = await fetch(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${GROQ_API_KEY}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages,
+          temperature: 0.7
+        })
+      }
+    );
+
+    if (!groqResponse.ok) {
+      throw new Error(`Groq API Error: ${groqResponse.status}`);
+    }
+
+    const data = await groqResponse.json();
+
+    let reply =
+      data.choices?.[0]?.message?.content ||
+      "Sorry, I couldn't generate a response.";
+
+    // Save AI reply into memory
+    addAssistantMessage(chatId, reply);  
+    // Send reply back to Telegram
+    await fetch(
+      `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: reply
+        })
+      }
+    );
+
+    return res.sendStatus(200);
+
+  } catch (error) {
+
+    console.error("ERROR:", error);
+
+    await fetch(
+      `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          chat_id: req.body?.message?.chat?.id,
+          text:
+            "❌ Sorry, something went wrong while processing your request. Please try again."
+        })
+      }
+    ).catch(() => {});
+
+    return res.sendStatus(500);
+
+  }
+
+});
+
+const PORT = process.env.PORT || 8080;
+
+app.listen(PORT, () => {
+  console.log(`🚀 AyoXpert is running on port ${PORT}`);
+});
