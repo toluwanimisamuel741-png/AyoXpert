@@ -1,3 +1,4 @@
+const { saveDocument } = require("./documents");
 const axios = require("axios");
 const fs = require("fs-extra");
 const pdfParse = require("pdf-parse");
@@ -37,33 +38,34 @@ async function handlePdf(BOT_TOKEN, chatId, document) {
 
     // Step 4: Read PDF
     const data = await pdfParse(pdfBuffer);
-
+saveDocument(chatId, data.text);
     // Step 5: Delete temporary file
     await fs.remove("temp.pdf");
 
     // Step 6: Reply with first part of the text
-    const preview =
-      data.text.length > 3000
-        ? data.text.substring(0, 3000) + "\n\n...(truncated)"
-        : data.text;
-
-    await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text:
-`✅ PDF successfully read!
+await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
+  body: JSON.stringify({
+    chat_id: chatId,
+    text:
+`✅ PDF loaded successfully!
 
 📄 Pages: ${data.numpages}
 
-━━━━━━━━━━━━━━
+I've finished reading your document.
 
-${preview}`
-      })
-    });
+You can now ask me things like:
+
+• Summarize this PDF
+• Explain Chapter 2
+• List important points
+• Generate quiz questions
+• Translate parts of the document`
+  })
+});
 
   } catch (err) {
     console.error(err);
