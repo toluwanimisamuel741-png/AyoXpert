@@ -43,8 +43,8 @@ app.post("/webhook", async (req, res) => {
     }
 
     // Show typing indicator
-  await fetch(
-  `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
+await fetch(
+  `https://api.telegram.org/bot${BOT_TOKEN}/sendChatAction`,
   {
     method: "POST",
     headers: {
@@ -52,8 +52,7 @@ app.post("/webhook", async (req, res) => {
     },
     body: JSON.stringify({
       chat_id: chatId,
-      text: reply,
-      parse_mode: "Markdown"
+      action: "typing"
     })
   }
 );
