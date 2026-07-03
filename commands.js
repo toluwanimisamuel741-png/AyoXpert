@@ -1,13 +1,43 @@
 async function sendMessage(BOT_TOKEN, chatId, text) {
-  await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
+ await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json"
+  },
   body: JSON.stringify({
-  chat_id: chatId,
-  text: text,
-  parse_mode: "Markdown"
+    chat_id: chatId,
+    text: `🤖 *AyoXpert Commands*
+
+🚀 /start
+Start AyoXpert
+
+📖 /help
+Show all commands
+
+ℹ️ /about
+About AyoXpert
+
+👨‍💻 /creator
+Meet the creator
+
+🧠 /reset
+Clear conversation memory
+
+😂 /joke
+Random joke
+
+💬 /quote
+Inspirational quote
+
+🔥 /motivate
+Daily motivation
+
+━━━━━━━━━━━━━━
+
+Simply send any question naturally.`,
+    parse_mode: "Markdown"
+  })
+});
 })
   });
 }
