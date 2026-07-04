@@ -1,4 +1,5 @@
 const { getStats } = require("./stats");
+
 async function sendMessage(BOT_TOKEN, chatId, text) {
   await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
     method: "POST",
@@ -70,6 +71,9 @@ Inspirational quote
 
 🔥 /motivate
 Daily motivation
+
+📊 /stats
+Bot statistics
 
 ━━━━━━━━━━━━━━
 
@@ -163,6 +167,25 @@ AyoXpert was created by *Omoniyi Taofeek* ❤️`
         BOT_TOKEN,
         chatId,
         jokes[Math.floor(Math.random() * jokes.length)]
+      );
+      return true;
+
+    case "/stats":
+
+      const stats = getStats();
+
+      await sendMessage(
+        BOT_TOKEN,
+        chatId,
+`📊 *AyoXpert Statistics*
+
+💬 Messages Answered: ${stats.messages}
+
+📄 PDFs Read: ${stats.pdfs}
+
+🌐 Web Searches: ${stats.searches}
+
+🚀 Version: 1.0`
       );
       return true;
 
