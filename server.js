@@ -3,7 +3,7 @@ const express = require("express");
 const { searchWeb } = require("./search");
 const { handleCommand } = require("./commands");
 const { handlePdf } = require("./pdf");
-const {
+const { handleImage } = require("./image");
   getConversation,
   addUserMessage,
   addAssistantMessage,
@@ -41,7 +41,11 @@ if (message.document) {
 
   return res.sendStatus(200);
 }
-
+// Detect Images
+if (message.photo) {
+  await handleImage(BOT_TOKEN, chatId);
+  return res.sendStatus(200);
+}
 if (!message.text) {
   return res.sendStatus(200);
 }
