@@ -39,6 +39,9 @@ async function handlePdf(BOT_TOKEN, chatId, document) {
     // Step 4: Read PDF
     const data = await pdfParse(pdfBuffer);
 saveDocument(chatId, data.text);
+    const { addPdf } = require("./stats");
+
+addPdf();
     // Step 5: Delete temporary file
     await fs.remove("temp.pdf");
 
