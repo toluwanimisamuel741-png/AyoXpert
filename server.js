@@ -4,6 +4,8 @@ const { searchWeb } = require("./search");
 const { handleCommand } = require("./commands");
 const { handlePdf } = require("./pdf");
 const { handleImage } = require("./image");
+
+const {
   getConversation,
   addUserMessage,
   addAssistantMessage,
