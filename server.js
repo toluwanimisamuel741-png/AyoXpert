@@ -1,3 +1,9 @@
+const {
+  addMessage,
+  addPdf,
+  addSearch,
+  getStats
+} = require("./stats");
 const { getDocument } = require("./documents");
 const express = require("express");
 const { searchWeb } = require("./search");
