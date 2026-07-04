@@ -1,3 +1,4 @@
+const { getStats } = require("./stats");
 async function sendMessage(BOT_TOKEN, chatId, text) {
   await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`, {
     method: "POST",
