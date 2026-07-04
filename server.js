@@ -113,7 +113,8 @@ await fetch(
     let searchContext = "";
 
     if (needsSearch) {
-      searchContext = await searchWeb(userText);
+     searchContext = await searchWeb(userText);
+addSearch();
     }const pdfText = getDocument(chatId);
 
 let extraContext = "";
