@@ -1,3 +1,4 @@
+const { shouldSearch } = require("./decideSearch");
 const {
   addUser,
   addMessage,
@@ -149,10 +150,7 @@ addUser(chatId);
       "update"
     ];
 
-    const needsSearch =
-      searchKeywords.some(word =>
-        userText.toLowerCase().includes(word)
-      );
+    const needsSearch = await shouldSearch(userText);
 
     let searchContext = "";
 
