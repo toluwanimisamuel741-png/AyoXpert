@@ -1,4 +1,5 @@
 const {
+  addUser,
   addMessage,
   addSearch,
   addPdf
@@ -45,7 +46,7 @@ app.post("/webhook", async (req, res) => {
     }
 
     const chatId = message.chat.id;
-
+addUser(chatId);
     // ==========================
     // Handle PDF
     // ==========================
