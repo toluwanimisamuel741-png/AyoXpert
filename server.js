@@ -1,9 +1,9 @@
 const {
   addMessage,
-  addPdf,
   addSearch,
-  getStats
+  addPdf
 } = require("./stats");
+
 const { getDocument } = require("./documents");
 const express = require("express");
 const { searchWeb } = require("./search");
@@ -20,7 +20,13 @@ const {
 
 const app = express();
 app.use(express.json());
+if (!BOT_TOKEN) {
+  throw new Error("BOT_TOKEN is missing.");
+}
 
+if (!GROQ_API_KEY) {
+  throw new Error("GROQ_API_KEY is missing.");
+}
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
@@ -29,38 +35,61 @@ app.get("/", (req, res) => {
 });
 
 app.post("/webhook", async (req, res) => {
+
   try {
 
-  const message = req.body.message;
+    const message = req.body.message;
 
-if (!message) {
-  return res.sendStatus(200);
-}
+    if (!message) {
+      return res.sendStatus(200);
+    }
 
-const chatId = message.chat.id;
+    const chatId = message.chat.id;
 
-// Detect PDF
-if (message.document) {
-  await handlePdf(
-    BOT_TOKEN,
-    chatId,
-    message.document
-  );
+    // ==========================
+    // Handle PDF
+    // ==========================
 
-  return res.sendStatus(200);
-}
-// Detect Images
-if (message.photo) {
-  await handleImage(BOT_TOKEN, chatId);
-  return res.sendStatus(200);
-}
-if (!message.text) {
-  return res.sendStatus(200);
-}
+    if (message.document) {
 
-const userText = message.text.trim();
+      addPdf();
 
-    // Handle Telegram commands
+      await handlePdf(
+        BOT_TOKEN,
+        chatId,
+        message.document
+      );
+
+      return res.sendStatus(200);
+
+    }
+
+    // ==========================
+    // Handle Images
+    // ==========================
+
+    if (message.photo) {
+
+      await handleImage(
+        BOT_TOKEN,
+        chatId,
+        message.photo
+      );
+
+    return res.sendStatus(500);
+
+    }
+
+    if (!message.text) {
+      return res.sendStatus(200);
+    }
+
+    const userText = message.text.trim();
+
+    // ==========================
+    // Commands
+    // ==========================
+
     const handled = await handleCommand(
       BOT_TOKEN,
       chatId,
@@ -72,22 +101,33 @@ const userText = message.text.trim();
       return res.sendStatus(200);
     }
 
-    // Show typing indicator
-await fetch(
-  `https://api.telegram.org/bot${BOT_TOKEN}/sendChatAction`,
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      chat_id: chatId,
-      action: "typing"
-    })
-  }
-);
+    // ==========================
+    // Loading Message
+    // ==========================
 
-    // Decide if live search is needed
+    const loadingMessage = await fetch(
+      `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          chat_id: chatId,
+          text: "🤔 Thinking..."
+        })
+      }
+    );
+
+    const loadingData = await loadingMessage.json();
+
+    const loadingMessageId =
+      loadingData.result.message_id;
+
+    // ==========================
+    // Live Search Detection
+    // ==========================
+
     const searchKeywords = [
       "today",
       "latest",
@@ -106,70 +146,140 @@ await fetch(
       "update"
     ];
 
-    const needsSearch = searchKeywords.some(word =>
-      userText.toLowerCase().includes(word)
-    );
+    const needsSearch =
+      searchKeywords.some(word =>
+        userText.toLowerCase().includes(word)
+      );
 
     let searchContext = "";
 
     if (needsSearch) {
-     searchContext = await searchWeb(userText);
-addSearch();
-    }const pdfText = getDocument(chatId);
 
-let extraContext = "";
+     await fetch(
+  `https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`,
+  {
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json"
+    },
+    body:JSON.stringify({
+      chat_id:chatId,
+      message_id:loadingMessageId,
+      text:reply
+    })
+  }
+);
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            chat_id: chatId,
+            message_id: loadingMessageId,
+            text: "🌍 Searching the web..."
+          })
+        }
+      );
 
-if (pdfText) {
-  extraContext = `
+      searchContext =
+        await searchWeb(userText);
+
+      addSearch();
+
+    }
+
+    // ==========================
+    // PDF Context
+    // ==========================
+
+    const pdfText = getDocument(chatId);
+
+    let extraContext = "";
+
+    if (pdfText) {
+
+      extraContext = `
 PDF DOCUMENT:
 
-${pdfText.substring(0, 12000)}
+${pdfText.substring(0,12000)}
 `;
-}
-    // Save the user's message
-   let finalPrompt = userText;
 
-if (needsSearch) {
-  finalPrompt += `
+    }
+
+    // ==========================
+    // Final Prompt
+    // ==========================
+
+    let finalPrompt = userText;
+
+    if (needsSearch) {
+
+      finalPrompt += `
 
 Live Search Results:
 
 ${searchContext}`;
-}
 
-if (pdfText) {
-  finalPrompt += `
+    }
+
+    if (pdfText) {
+
+      finalPrompt += `
 
 ${extraContext}
 
-If the user's question is about the uploaded PDF, answer ONLY using the PDF.
-If it isn't related, answer normally.
+If the user's question is about the uploaded PDF,
+answer ONLY using the PDF.
+
+If it isn't related,
+answer normally.
 `;
-}
 
-addUserMessage(chatId, finalPrompt);
+    }
 
-    // Get conversation history
-    const messages = getConversation(chatId);
+    addUserMessage(chatId, finalPrompt);
 
-    // Ask Groq AI
-    const groqResponse = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
+    const messages =
+      getConversation(chatId);
+
+    // ==========================
+    // Preparing AI
+    // ==========================
+
+    await fetch(
+      `https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`,
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${GROQ_API_KEY}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages,
-          temperature: 0.7
+          chat_id: chatId,
+          message_id: loadingMessageId,
+          text: "🧠 Preparing your answer..."
         })
       }
     );
 
-    if (!groqResponse.ok) {
+    const groqResponse =
+      await fetch(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${GROQ_API_KEY}`,
+            "Content-Type":
+              "application/json"
+          },
+          body: JSON.stringify({
+            model:
+              "llama-3.3-70b-versatile",
+            messages,
+            temperature: 0.7
+          })
+        }
+      );    if (!groqResponse.ok) {
       throw new Error(`Groq API Error: ${groqResponse.status}`);
     }
 
@@ -179,11 +289,24 @@ addUserMessage(chatId, finalPrompt);
       data.choices?.[0]?.message?.content ||
       "Sorry, I couldn't generate a response.";
 
-    // Save AI reply into memory
-    addAssistantMessage(chatId, reply);  
-    // Send reply back to Telegram
+    // ==========================
+    // Statistics
+    // ==========================
+
+    addMessage();
+
+    // ==========================
+    // Save Conversation
+    // ==========================
+
+    addAssistantMessage(chatId, reply);
+
+    // ==========================
+    // Replace "Thinking..."
+    // ==========================
+
     await fetch(
-      `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
+      `https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`,
       {
         method: "POST",
         headers: {
@@ -191,6 +314,7 @@ addUserMessage(chatId, finalPrompt);
         },
         body: JSON.stringify({
           chat_id: chatId,
+          message_id: loadingMessageId,
           text: reply
         })
       }
@@ -202,20 +326,27 @@ addUserMessage(chatId, finalPrompt);
 
     console.error("ERROR:", error);
 
-    await fetch(
-      `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          chat_id: req.body?.message?.chat?.id,
-          text:
-            "❌ Sorry, something went wrong while processing your request. Please try again."
-        })
-      }
-    ).catch(() => {});
+    const chatId =
+      req.body?.message?.chat?.id;
+
+    if (chatId) {
+
+      await fetch(
+        `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            chat_id: chatId,
+            text:
+              "❌ Sorry, something went wrong while processing your request. Please try again."
+          })
+        }
+      ).catch(() => {});
+
+    }
 
     return res.sendStatus(500);
 
@@ -223,8 +354,13 @@ addUserMessage(chatId, finalPrompt);
 
 });
 
-const PORT = process.env.PORT || 8080;
+const PORT =
+  process.env.PORT || 8080;
 
 app.listen(PORT, () => {
-  console.log(`🚀 AyoXpert is running on port ${PORT}`);
+
+  console.log(
+    `🚀 AyoXpert is running on port ${PORT}`
+  );
+
 });
