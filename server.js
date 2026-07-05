@@ -21,6 +21,10 @@ const {
 
 const app = express();
 app.use(express.json());
+
+const BOT_TOKEN = process.env.BOT_TOKEN;
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
+
 if (!BOT_TOKEN) {
   throw new Error("BOT_TOKEN is missing.");
 }
@@ -42,7 +46,7 @@ app.post("/webhook", async (req, res) => {
     const message = req.body.message;
 
     if (!message) {
-      return res.sendStatus(200);
+     return res.sendStatus(200);
     }
 
     const chatId = message.chat.id;
@@ -156,33 +160,24 @@ addUser(chatId);
 
     if (needsSearch) {
 
-     await fetch(
+   await fetch(
   `https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`,
   {
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json"
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
     },
-    body:JSON.stringify({
-      chat_id:chatId,
-      message_id:loadingMessageId,
-      text:reply
+    body: JSON.stringify({
+      chat_id: chatId,
+      message_id: loadingMessageId,
+      text: "🌍 Searching the web..."
     })
   }
 );
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            chat_id: chatId,
-            message_id: loadingMessageId,
-            text: "🌍 Searching the web..."
-          })
-        }
-      );
 
+searchContext = await searchWeb(userText);
+
+addSearch();
       searchContext =
         await searchWeb(userText);
 
@@ -349,7 +344,7 @@ answer normally.
 
     }
 
-    return res.sendStatus(500);
+   return res.sendStatus(200);
 
   }
 
