@@ -176,10 +176,6 @@ addUser(chatId);
 searchContext = await searchWeb(userText);
 
 addSearch();
-      searchContext =
-        await searchWeb(userText);
-
-      addSearch();
 
     }
 
