@@ -32,8 +32,6 @@ if (!BOT_TOKEN) {
 if (!GROQ_API_KEY) {
   throw new Error("GROQ_API_KEY is missing.");
 }
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
 app.get("/", (req, res) => {
   res.send("🚀 AyoXpert AI Bot is running!");
