@@ -1,5 +1,4 @@
 const processedUpdates = new Set();
-const message = req.body.message;
 if (processedUpdates.has(message.message_id)) {
   return res.sendStatus(200);
 }
@@ -38,11 +37,11 @@ const BOT_TOKEN = process.env.BOT_TOKEN;
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
 if (!BOT_TOKEN) {
-  throw new Error("BOT_TOKEN is missing.");
+    throw new Error("BOT_TOKEN is missing.");
 }
 
 if (!GROQ_API_KEY) {
-  throw new Error("GROQ_API_KEY is missing.");
+    throw new Error("GROQ_API_KEY is missing.");
 }
 
 app.get("/", (req, res) => {
