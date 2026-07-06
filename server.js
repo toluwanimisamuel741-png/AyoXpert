@@ -1,6 +1,5 @@
 const processedUpdates = new Set();
 const message = req.body.message;
-
 if (processedUpdates.has(message.message_id)) {
     return res.sendStatus(200);
 }
@@ -60,7 +59,8 @@ app.post("/webhook", async (req, res) => {
      return res.sendStatus(200);
     }
 
-    const chatId = message.chat.id;
+  const chatId = message.chat.id;
+
 addUser(chatId);
     // ==========================
     // Handle PDF
@@ -84,17 +84,17 @@ addUser(chatId);
     // Handle Images
     // ==========================
 
-    if (message.photo) {
+if (message.photo) {
 
-      await handleImage(
+    await handleImage(
         BOT_TOKEN,
         chatId,
         message.photo
-      );
+    );
 
-    return res.sendStatus(500);
+    return res.sendStatus(200);
 
-    }
+}
 
     if (!message.text) {
       return res.sendStatus(200);
