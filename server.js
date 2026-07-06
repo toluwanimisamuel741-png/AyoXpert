@@ -1,5 +1,6 @@
 const processedUpdates = new Set();
 const message = req.body.message;
+
 if (processedUpdates.has(message.message_id)) {
     return res.sendStatus(200);
 }
