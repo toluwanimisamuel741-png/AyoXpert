@@ -1,12 +1,13 @@
 const processedUpdates = new Set();
+const message = req.body.message;
 if (processedUpdates.has(message.message_id)) {
-  return res.sendStatus(200);
+    return res.sendStatus(200);
 }
 
 processedUpdates.add(message.message_id);
 
 setTimeout(() => {
-  processedUpdates.delete(message.message_id);
+    processedUpdates.delete(message.message_id);
 }, 60000);
 const { shouldSearch } = require("./decideSearch");
 const {
