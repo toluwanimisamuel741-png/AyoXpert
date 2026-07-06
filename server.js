@@ -1,5 +1,5 @@
 const processedUpdates = new Set();
-
+const { splitMessage } = require("./utils");
 const { shouldSearch } = require("./decideSearch");
 const {
   addUser,
@@ -160,21 +160,40 @@ app.post("/webhook", async (req, res) => {
 
     if (needsSearch) {
 
-        await fetch(
-            `https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    chat_id: chatId,
-                    message_id: loadingMessageId,
-                    text: "🌍 Searching the web..."
-                })
-            }
-        );
+       const parts = splitMessage(reply);
 
+await fetch(
+    `https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`,
+    {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            chat_id: chatId,
+            message_id: loadingMessageId,
+            text: parts[0]
+        })
+    }
+);
+
+for (let i = 1; i < parts.length; i++) {
+
+    await fetch(
+        `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                chat_id: chatId,
+                text: parts[i]
+            })
+        }
+    );
+
+}
         try {
 
             searchContext = await searchWeb(userText);
