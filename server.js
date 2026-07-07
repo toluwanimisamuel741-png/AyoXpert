@@ -1,3 +1,7 @@
+const {
+    sendTelegramMessage,
+    editTelegramMessage
+} = require("./telegram");
 const processedUpdates = new Set();
 const { splitMessage } = require("./utils");
 const { shouldSearch } = require("./decideSearch");
@@ -127,8 +131,11 @@ app.post("/webhook", async (req, res) => {
     // Loading Message
     // ==========================
 
-    const loadingMessage = await fetch(
-        `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
+    const loadingMessage =await sendTelegramMessage(
+    BOT_TOKEN,
+    chatId,
+    "🤔 Thinking..."
+);
         {
             method: "POST",
             headers: {
@@ -162,8 +169,12 @@ app.post("/webhook", async (req, res) => {
 
        const parts = splitMessage(reply);
 
-await fetch(
-    `https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`,
+await editTelegramMessage(
+    BOT_TOKEN,
+    chatId,
+    loadingMessageId,
+    reply
+);
     {
         method: "POST",
         headers: {
@@ -179,8 +190,11 @@ await fetch(
 
 for (let i = 1; i < parts.length; i++) {
 
-    await fetch(
-        `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
+  await sendTelegramMessage(
+    BOT_TOKEN,
+    chatId,
+    "🤔 Thinking..."
+);
         {
             method: "POST",
             headers: {
@@ -267,8 +281,12 @@ answer normally.
     // Preparing AI
     // ==========================
 
-    await fetch(
-        `https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`,
+   await editTelegramMessage(
+    BOT_TOKEN,
+    chatId,
+    loadingMessageId,
+    reply
+);
         {
                method: "POST",
         headers: {
@@ -327,8 +345,12 @@ answer normally.
     // Update Telegram Message
     // ==========================
 
-    await fetch(
-        `https://api.telegram.org/bot${BOT_TOKEN}/editMessageText`,
+   await editTelegramMessage(
+    BOT_TOKEN,
+    chatId,
+    loadingMessageId,
+    reply
+);
         {
             method: "POST",
             headers: {
@@ -352,8 +374,11 @@ answer normally.
 
     if (chatId) {
 
-        await fetch(
-            `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`,
+     await sendTelegramMessage(
+    BOT_TOKEN,
+    chatId,
+    "🤔 Thinking..."
+);
             {
                 method: "POST",
                 headers: {
