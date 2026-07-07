@@ -1,3 +1,4 @@
+const { formatReply } = require("./formatter");
 const {
     sendTelegramMessage,
     editTelegramMessage
@@ -131,22 +132,12 @@ app.post("/webhook", async (req, res) => {
     // Loading Message
     // ==========================
 
-    const loadingMessage =await sendTelegramMessage(
+  const loadingMessage = await sendTelegramMessage(
     BOT_TOKEN,
     chatId,
     "🤔 Thinking..."
 );
-        {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                chat_id: chatId,
-                text: "🤔 Thinking..."
-            })
-        }
-    );
+
 
     const loadingData = await loadingMessage.json();
 
@@ -167,47 +158,15 @@ app.post("/webhook", async (req, res) => {
 
     if (needsSearch) {
 
-       const parts = splitMessage(reply);
+     
 
 await editTelegramMessage(
     BOT_TOKEN,
     chatId,
     loadingMessageId,
-    reply
-);
-    {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            chat_id: chatId,
-            message_id: loadingMessageId,
-            text: parts[0]
-        })
-    }
+    "🌍 Searching the web..."
 );
 
-for (let i = 1; i < parts.length; i++) {
-
-  await sendTelegramMessage(
-    BOT_TOKEN,
-    chatId,
-    "🤔 Thinking..."
-);
-        {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                chat_id: chatId,
-                text: parts[i]
-            })
-        }
-    );
-
-}
         try {
 
             searchContext = await searchWeb(userText);
@@ -281,23 +240,13 @@ answer normally.
     // Preparing AI
     // ==========================
 
-   await editTelegramMessage(
+await editTelegramMessage(
     BOT_TOKEN,
     chatId,
     loadingMessageId,
-    reply
+    "🧠 Preparing your answer..."
 );
-        {
-               method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            chat_id: chatId,
-            message_id: loadingMessageId,
-            text: "🧠 Preparing your answer..."
-        })
-    });
+      
 
     // ==========================
     // Ask Groq
@@ -325,9 +274,11 @@ answer normally.
 
     const data = await groqResponse.json();
 
-    let reply =
-        data.choices?.[0]?.message?.content ||
-        "Sorry, I couldn't generate a response.";
+   let reply =
+    data.choices?.[0]?.message?.content ||
+    "Sorry, I couldn't generate a response.";
+
+reply = formatReply(reply);
 
     // ==========================
     // Statistics
@@ -344,25 +295,24 @@ answer normally.
     // ==========================
     // Update Telegram Message
     // ==========================
+const parts = splitMessage(reply);
 
-   await editTelegramMessage(
+await editTelegramMessage(
     BOT_TOKEN,
     chatId,
     loadingMessageId,
-    reply
+    parts[0]
 );
-        {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                chat_id: chatId,
-                message_id: loadingMessageId,
-                text: reply
-            })
-        }
+
+for (let i = 1; i < parts.length; i++) {
+
+    await sendTelegramMessage(
+        BOT_TOKEN,
+        chatId,
+        parts[i]
     );
+
+}
 
     return res.sendStatus(200);
 
@@ -374,22 +324,11 @@ answer normally.
 
     if (chatId) {
 
-     await sendTelegramMessage(
+await sendTelegramMessage(
     BOT_TOKEN,
     chatId,
-    "🤔 Thinking..."
-);
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    chat_id: chatId,
-                    text: "❌ Sorry, something went wrong while processing your request. Please try again."
-                })
-            }
-        ).catch(() => {});
+    "❌ Sorry, something went wrong while processing your request. Please try again."
+).catch(() => {});
 
     }
 
