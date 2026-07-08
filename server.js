@@ -7,6 +7,7 @@ const {
 const processedUpdates = new Set();
 const { splitMessage } = require("./utils");
 const { shouldSearch } = require("./decideSearch");
+
 const {
   addUser,
   addMessage,
@@ -20,7 +21,6 @@ const { searchWeb } = require("./search");
 const { handleCommand } = require("./commands");
 const { handlePdf } = require("./pdf");
 const { handleImage } = require("./image");
-const { generateImage } = require("./imageGenerator");
 
 const {
   getConversation,
