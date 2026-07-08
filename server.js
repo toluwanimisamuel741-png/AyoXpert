@@ -1,3 +1,4 @@
+const { generateImage } = require("./imageGenerator");
 const { formatReply } = require("./formatter");
 const {
     sendTelegramMessage,
