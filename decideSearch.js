@@ -1,89 +1,71 @@
+const fetch = require("node-fetch");
+
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
+
 async function shouldSearch(userText) {
 
-    const text = userText.toLowerCase();
+    const prompt = `
+You are an AI decision engine.
 
-    const keywords = [
+Reply ONLY with YES or NO.
 
-        // Time
-        "today",
-        "yesterday",
-        "tomorrow",
-        "latest",
-        "current",
-        "currently",
-        "now",
-        "recent",
-        "breaking",
-        "update",
-        "updates",
-        "live",
+Answer YES if the user's question requires:
+- Current news
+- Today's events
+- Weather
+- Sports results
+- Football fixtures
+- Match scores
+- Stock prices
+- Cryptocurrency prices
+- Live information
+- Internet facts that may have changed recently
 
-        // News
-        "news",
-        "headline",
-        "headlines",
+Answer NO if the question can be answered from general knowledge.
 
-        // Weather
-        "weather",
-        "forecast",
-        "temperature",
-        "rain",
+Question:
+${userText}
+`;
 
-        // Finance
-        "price",
-        "prices",
-        "stock",
-        "stocks",
-        "market",
-        "bitcoin",
-        "crypto",
-        "ethereum",
-        "gold",
-        "dollar",
-        "usd",
-        "exchange rate",
+    try {
 
-        // Sports
-        "football",
-        "soccer",
-        "match",
-        "matches",
-        "score",
-        "scores",
-        "premier league",
-        "laliga",
-        "champions league",
-        "nba",
-        "fifa",
+        const response = await fetch(
+            "https://api.groq.com/openai/v1/chat/completions",
+            {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${GROQ_API_KEY}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    model: "llama-3.3-70b-versatile",
+                    messages: [
+                        {
+                            role: "user",
+                            content: prompt
+                        }
+                    ],
+                    temperature: 0
+                })
+            }
+        );
 
-        // Politics
-        "president",
-        "election",
-        "government",
-        "minister",
+        const data = await response.json();
 
-        // Technology
-        "openai",
-        "chatgpt",
-        "google",
-        "apple",
-        "microsoft",
-        "tesla",
-        "iphone",
-        "android",
+        const answer =
+            data.choices[0].message.content
+            .trim()
+            .toUpperCase();
 
-        // Generic search words
-        "search",
-        "look up",
-        "find",
-        "who is",
-        "what is",
-        "where is",
-        "when is"
+        return answer.includes("YES");
 
-    ];
+    } catch (err) {
 
-    return keywords.some(keyword => text.includes(keyword));
+        console.log(err);
+
+        return false;
+
+    }
 
 }
 
