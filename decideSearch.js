@@ -1,5 +1,3 @@
-const fetch = require("node-fetch");
-
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 
 async function shouldSearch(userText) {
@@ -9,19 +7,16 @@ You are an AI decision engine.
 
 Reply ONLY with YES or NO.
 
-Answer YES if the user's question requires:
+Answer YES if the question needs:
 - Current news
 - Today's events
+- Sports
+- Football
 - Weather
-- Sports results
-- Football fixtures
-- Match scores
-- Stock prices
-- Cryptocurrency prices
+- Prices
 - Live information
-- Internet facts that may have changed recently
 
-Answer NO if the question can be answered from general knowledge.
+Otherwise reply NO.
 
 Question:
 ${userText}
@@ -32,43 +27,4 @@ ${userText}
         const response = await fetch(
             "https://api.groq.com/openai/v1/chat/completions",
             {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${GROQ_API_KEY}`,
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    model: "llama-3.3-70b-versatile",
-                    messages: [
-                        {
-                            role: "user",
-                            content: prompt
-                        }
-                    ],
-                    temperature: 0
-                })
-            }
-        );
-
-        const data = await response.json();
-
-        const answer =
-            data.choices[0].message.content
-            .trim()
-            .toUpperCase();
-
-        return answer.includes("YES");
-
-    } catch (err) {
-
-        console.log(err);
-
-        return false;
-
-    }
-
-}
-
-module.exports = {
-    shouldSearch
-};
+                method: "
